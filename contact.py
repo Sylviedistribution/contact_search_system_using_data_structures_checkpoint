@@ -62,9 +62,9 @@ class DoubleLinkedList:
             current = current.next
         return False
 
-# Table de hashage pour recherche rapide par nom
+# Hash table for exact name lookup
 contacts_hash = dict()
-# Liste doublement chaînée pour affichage avant/arrière
+# Double linked list for ordered storage
 contacts_list = DoubleLinkedList()
 
 # Recherche par sous-chaîne
