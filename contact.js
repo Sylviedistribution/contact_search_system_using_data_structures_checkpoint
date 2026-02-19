@@ -13,6 +13,27 @@ function prompt(question) {
   });
 }
 
+function buildLPS(pattern) {
+  const lps = Array(pattern.length).fill(0);
+  let len = 0;
+  let i = 1;
+
+  while (i < pattern.length) {
+    if (pattern[i] === patern[len]) {
+      len++;
+      lps[i] = len;
+      i++;
+    } else {
+      if (len !== 0) {
+        len = lps[len - 1];
+      } else {
+        lps[i] = 0;
+        i++;
+      }
+    }
+  }
+}
+
 class Contact {
   constructor(name, number) {
     this.name = name;
@@ -74,8 +95,36 @@ class DoubleLinkedList {
       if (current.data.name.toLowerCase().includes(substring.toLowerCase())) {
         results.push(current.data);
       }
-              current = current.next;
-
+      current = current.next;
+    }
+    return results;
+  }
+  // KMP algorithm for substring search
+  searchByKeywordKPM(substring) {
+    let current = this.head;
+    const results = [];
+    const lps = buildLPS(substring.toLowerCase());
+    while (current) {
+      const name = current.data.name.toLowerCase();
+      let i = 0;
+      let j = 0;
+      while (i < name.length) {
+        if (name[i] === substring[j].toLowerCase()) {
+          i++;
+          j++;
+          if (j === substring.length) {
+            results.push(current.data);
+            break;
+          }
+        } else {
+          if (j !== 0) {
+            j = lps[j - 1];
+          } else {
+            i++;
+          }
+        }
+      }
+      current = current.next;
     }
     return results;
   }
@@ -113,7 +162,8 @@ displayMenu = function () {
         4. Display Contacts Forward\n
         5. Display Contacts Backward\n
         6. Delete Contact\n
-        7. Exit`);
+        7. Search by Keyword (KMP Algorithm)\n
+        8. Exit`);
 };
 
 async function runProgram() {
@@ -131,7 +181,9 @@ async function runProgram() {
         console.log("Contact added successfully.");
         break;
       case "2":
-        const searchName = (await prompt("Enter name to search: ")).toLowerCase();
+        const searchName = (
+          await prompt("Enter name to search: ")
+        ).toLowerCase();
         if (contacts_hash.has(searchName)) {
           const contact = contacts_hash.get(searchName);
           console.log("Name: " + contact.name + ", Number: " + contact.number);
@@ -165,6 +217,19 @@ async function runProgram() {
         console.log("Contact deleted successfully.");
         break;
       case "7":
+        const kmpSubstring = await prompt("Enter substring to search (KMP): ");
+        const kmpResults = contacts_list.searchByKeywordKPM(kmpSubstring);
+        if (kmpResults.length > 0) {
+          kmpResults.forEach((contact) => {
+            console.log(
+              "Name: " + contact.name + ", Number: " + contact.number,
+            );
+          });
+        } else {
+          console.log("No contacts found with the given substring.");
+        }
+        break;
+      case "8":
         console.log("Exiting program.");
         return;
     }
