@@ -9,6 +9,24 @@ class Node:
         self.next = None
         self.prev = None
 
+def buildLPS(pattern):
+    lps = [0] * len(pattern)
+    length = 0
+    i = 1
+
+    while i < len(pattern):
+        if pattern[i] == pattern[length]:
+            length += 1
+            lps[i] = length
+            i += 1
+        else:
+            if length != 0:
+                length = lps[length - 1]
+            else:
+                lps[i] = 0
+                i += 1
+
+    return lps
 class DoubleLinkedList:
     def __init__(self):
         self.head = None
@@ -67,7 +85,7 @@ contacts_hash = dict()
 # Double linked list for ordered storage
 contacts_list = DoubleLinkedList()
 
-# Recherche par sous-chaîne
+# Search by keyword 
 def search_by_keyword(keyword):
     results = []
     current = contacts_list.head
@@ -77,69 +95,105 @@ def search_by_keyword(keyword):
         current = current.next
     return results
 
+# Search by keyword using KMP algorithm
+def kmp_search(text, pattern):
+    lps = buildLPS(pattern)
+    i = j = 0
+
+    while i < len(text):
+        if text[i].lower() == pattern[j].lower():
+            i += 1
+            j += 1
+            if j == len(pattern):
+                return True
+        else:
+            if j != 0:
+                j = lps[j - 1]
+            else:
+                i += 1
+    return False
+
 # Menu principal
 def menu():
     while True:
         print("\n--- Gestion des Contacts ---")
-        print("1. Ajouter un contact")
-        print("2. Rechercher par mot-clé")
-        print("3. Rechercher par nom exact")
-        print("4. Afficher tous les contacts (avant)")
-        print("5. Afficher tous les contacts (arrière)")
-        print("6. Supprimer un contact")
-        print("7. Quitter")
+        print("1. Add a contact")
+        print("2. Search by keyword")
+        print("3. Search by exact name")
+        print("4. Display all contacts (forward)")
+        print("5. Display all contacts (backward)")
+        print("6. Delete a contact")
+        print("7. Search by keyword (KMP Algorithm)")
+        print("8. Quit")
         
         option = input("Entrez votre choix: ")
 
         if option == "1":
-            name = input("Nom: ")
-            phone = input("Téléphone: ")
+            name = input("Name: ")
+            phone = input("Phone number: ")
             contact = Contact(name, phone)
             contacts_list.append(contact)
             contacts_hash[name] = contact
-            print("Contact ajouté.")
+            print("Contact added.")
 
         elif option == "2":
-            keyword = input("Mot-clé: ")
+            keyword = input("Keyword: ")
             results = search_by_keyword(keyword)
             if results:
-                print("Contacts trouvés:")
+                print("Contacts found:")
                 for c in results:
                     print(f"{c.name} - {c.phone_number}")
             else:
-                print("Aucun contact trouvé.")
-
+                print("No contacts found.")
         elif option == "3":
-            name = input("Nom exact: ")
+            name = input("Exact name: ")
             contact = contacts_hash.get(name)
             if contact:
-                print(f"Contact trouvé: {contact.name} - {contact.phone_number}")
+                print(f"Contact found: {contact.name} - {contact.phone_number}")
             else:
-                print("Aucun contact trouvé.")
+                print("No contact found.")
 
         elif option == "4":
-            print("Contacts (avant):")
+            print("Contacts (forward):")
             contacts_list.display_forward()
 
         elif option == "5":
-            print("Contacts (arrière):")
+            print("Contacts (backward):")
             contacts_list.display_backward()
 
         elif option == "6":
-            name = input("Nom du contact à supprimer: ")
+            name = input("Name of contact to delete: ")
             deleted = contacts_list.delete(name)
             if deleted:
                 contacts_hash.pop(name, None)
-                print("Contact supprimé.")
+                print("Contact deleted.")
             else:
-                print("Contact non trouvé.")
+                print("Contact not found.")
 
         elif option == "7":
-            print("Au revoir!")
+            print("Search by keyword using KMP Algorithm")
+            keyword = input("Keyword: ")
+            results = []
+            current = contacts_list.head
+            while current:
+                if kmp_search(current.data.name, keyword):
+                    results.append(current.data)
+                current = current.next
+                
+            if results:
+                print("Contacts found:")
+                for c in results:
+                    print(f"{c.name} - {c.phone_number}")
+            else:   
+                print("No contacts found.")
+
+            break
+        
+        elif option == "8":
+            print("Goodbye!")
             break
 
         else:
-            print("Option invalide.")
-
+            print("Invalid option.")
 # Lancer le programme
 menu()
